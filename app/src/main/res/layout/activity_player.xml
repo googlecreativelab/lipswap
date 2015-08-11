@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/video_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <VideoView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"/>
+
+    <FrameLayout
+        android:id="@+id/video_view_proxy"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+    <ImageView
+        android:id="@+id/play_btn"
+        android:layout_width="102dp"
+        android:layout_height="116dp"
+        android:src="@drawable/player_play_btn"
+        android:layout_gravity="center"
+        android:contentDescription="@string/player_play_vid"/>
+
+    <LinearLayout
+        android:id="@+id/menu_container"
+        android:layout_width="match_parent"
+        android:layout_height="66dp"
+        android:orientation="horizontal"
+        android:weightSum="4"
+        android:background="#aa000000">
+
+        <ImageButton
+            android:id="@+id/menu_back"
+            android:layout_width="0dp"
+            android:layout_height="66dp"
+            android:layout_weight="1"
+            android:src="@drawable/menu_ic_back"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/player_menu_back"/>
+
+        <ImageButton
+            android:id="@+id/menu_grid"
+            android:layout_width="0dp"
+            android:layout_height="66dp"
+            android:layout_weight="1"
+            android:src="@drawable/menu_ic_grid"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/player_menu_grid"/>
+
+        <ImageButton
+            android:id="@+id/menu_delete"
+            android:layout_width="0dp"
+            android:layout_height="66dp"
+            android:layout_weight="1"
+            android:src="@drawable/menu_ic_delete"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/player_menu_delete_vid"/>
+
+        <ImageButton
+            android:id="@+id/menu_share"
+            android:layout_width="0dp"
+            android:layout_height="66dp"
+            android:layout_weight="1"
+            android:src="@drawable/menu_ic_share"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/player_menu_share_video"/>
+
+    </LinearLayout>
+
+
+</FrameLayout>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.androidexperiments.lipflip.view.IntroView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    tools:showIn="@layout/activity_chooser">
+
+    <com.androidexperiments.lipflip.view.VideoView
+        android:id="@+id/logo"
+        android:layout_width="300dp"
+        android:layout_height="366dp"
+        android:layout_centerInParent="true" />
+
+    <TextView
+        style="@style/DefaultTextStyle"
+        android:id="@+id/intro_text_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignBottom="@id/logo"
+        android:layout_marginBottom="45dp"
+        android:text="@string/app_name"
+        android:textAllCaps="true"
+        android:textSize="18sp" />
+
+    <TextView
+        style="@style/ExperimentTextStyle"
+        android:id="@+id/intro_text_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:text="an android experiment"/>
+
+
+</com.androidexperiments.lipflip.view.IntroView>

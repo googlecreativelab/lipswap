@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/photo_chooser_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#cc000000" />
+
+    <LinearLayout
+        android:id="@+id/photo_chooser_container"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_gravity="bottom"
+        android:weightSum="2"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_use_camera"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/btn_chooser_use_cam_src"
+            android:contentDescription="@string/cd_use_camera"
+            android:background="@drawable/btn_chooser_imgbtn_bg"/>
+
+        <FrameLayout
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"/>
+
+        <ImageButton
+            android:id="@+id/btn_use_docs"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/btn_chooser_use_docs_src"
+            android:contentDescription="@string/cd_use_documents"
+            android:background="@drawable/btn_chooser_imgbtn_bg"/>
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,0 +1,51 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:actionModeBackground">@android:color/black</item>
+        <item name="android:actionModeCloseDrawable">@drawable/menu_ic_close</item>
+        <item name="android:actionModeStyle">@style/AppActionMode</item>
+        <item name="android:colorPrimary">#000000</item>
+        <item name="colorPrimary">#000000</item>
+    </style>
+
+    <style name="ActionBarStyle" parent="Widget.AppCompat.ActionBar">
+
+    </style>
+
+    <style name="DialogStyle" parent="Base.Theme.AppCompat.Dialog.Alert">
+
+    </style>
+
+    <style name="AppActionMode" parent="Widget.AppCompat.ActionMode">
+        <item name="android:background">#000000</item>
+    </style>
+
+
+    <style name="SeekbarStyle">
+        <item name="android:progressDrawable">@drawable/seek_progress</item>
+        <item name="android:thumb">@drawable/seek_thumb</item>
+        <item name="android:splitTrack">false</item>
+    </style>
+
+    <style name="DefaultTextStyle">
+        <item name="android:textSize">25sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:letterSpacing">0.200</item>
+        <item name="fontPath">fonts/Poppins-SemiBold.ttf</item>
+        <item name="android:gravity">center_horizontal|center_vertical</item>
+    </style>
+    <style name="RegularTextStyle" parent="DefaultTextStyle">
+        <item name="android:textSize">16sp</item>
+        <item name="fontPath">fonts/Poppins-Medium.ttf</item>
+        <item name="android:gravity">center_horizontal|center_vertical</item>
+    </style>
+
+    <style name="ExperimentTextStyle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="fontPath">fonts/GCLTyp1451TT-Light.ttf</item>
+        <item name="android:gravity">center_horizontal|center_vertical</item>
+    </style>
+
+</resources>

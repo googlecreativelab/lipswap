@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ChooserActivity">
+    <item
+        android:id="@+id/action_delete"
+        android:title="Delete"
+        android:icon="@drawable/menu_ic_delete"/>
+    <item
+        android:id="@+id/action_share"
+        android:title="Share"
+        android:icon="@drawable/menu_ic_share"/>
+</menu>

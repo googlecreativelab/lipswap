@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="center">
+
+    <TextView
+        style="@style/DefaultTextStyle"
+        android:id="@+id/actionbar_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="@string/app_name"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        android:textSize="18sp"/>
+
+
+</FrameLayout>

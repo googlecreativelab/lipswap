@@ -1,0 +1,52 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    tools:context=".ChooserActivity">
+
+    <GridView
+        android:id="@+id/list_chooser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:horizontalSpacing="3dp"
+        android:verticalSpacing="3dp"
+        android:choiceMode="multipleChoiceModal"
+        android:numColumns="2" />
+
+    <ImageButton
+        android:id="@+id/btn_create_new"
+        android:layout_width="108dp"
+        android:layout_height="108dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/btn_create_new"
+        android:background="@android:color/transparent"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="@null"/>
+
+    <ProgressBar
+        android:id="@+id/progress_loader"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:indeterminate="true"
+        android:indeterminateOnly="true"
+        android:indeterminateTint="#e0369b"
+        android:indeterminateTintMode="src_in"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        style="@style/DefaultTextStyle"
+        android:id="@+id/text_get_started"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="100dp"
+        android:visibility="gone"
+        android:text="@string/get_started"/>
+
+    <include layout="@layout/view_chooser_photo_choose_overlay" />
+
+    <include layout="@layout/view_intro_movie_and_text"
+        android:id="@+id/intro_view"/>
+
+</RelativeLayout>

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Lip Swap</string>
+
+    <string name="btn_back">Back</string>
+    <string name="btn_record">Record</string>
+    <string name="btn_edit">Edit Colors</string>
+    <string name="edit_seekbar_hue">Hue</string>
+    <string name="edit_seekbar_gamma">Gamma</string>
+    <string name="get_started">GET STARTED\nBY SELECTING OR\nSNAPPING A PHOTO</string>
+    <string name="player_menu_delete_vid">Delete Video</string>
+    <string name="player_menu_share_video">Share Video</string>
+    <string name="player_menu_back">Back To Recording</string>
+    <string name="player_menu_grid">Back To The Grid</string>
+    <string name="player_play_vid">Play Video</string>
+    <string name="dialog_deleting_file">Deleting File…</string>
+    <string name="dialog_deleting_files">Deleting Files…</string>
+    <string name="first_time_text">BEGIN BY BRUSHING\nTHE PHOTO\nWITH YOUR FINGER</string>
+    <string name="cd_use_camera">Use Camera</string>
+    <string name="cd_use_documents">Use Documents</string>
+
+    <string name="action_about">About</string>
+    <string name="action_license">License</string>
+</resources>

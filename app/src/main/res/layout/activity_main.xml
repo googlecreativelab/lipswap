@@ -1,0 +1,100 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/main_container"
+    tools:context=".MainActivity">
+
+    <TextureView
+        android:id="@+id/texture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <com.androidexperiments.lipflip.view.PaintingView
+        android:id="@+id/paintView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:id="@+id/controls_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/btn_record"
+            android:layout_width="83dp"
+            android:layout_height="83dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/margin_bottom"
+            android:src="@drawable/btn_record"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/btn_record"/>
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/btn_back"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/btn_back"/>
+
+        <ImageButton
+            android:id="@+id/btn_edit"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/btn_edit"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/btn_edit"/>
+
+        <RelativeLayout
+            android:id="@+id/edit_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:paddingBottom="40dp"
+            android:paddingTop="30dp"
+            android:layout_alignParentBottom="true"
+            android:background="#aa000000">
+
+            <ImageView
+                android:id="@+id/edit_ic_hue"
+                android:layout_width="28dp"
+                android:layout_height="24dp"
+                android:src="@drawable/edit_ic_hue"/>
+            <SeekBar
+                style="@style/SeekbarStyle"
+                android:id="@+id/edit_seek_hue"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/edit_ic_hue"
+                android:max="200"
+                android:progress="100"/>
+
+            <ImageView
+                android:id="@+id/edit_ic_gamma"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_below="@id/edit_ic_hue"
+                android:layout_marginTop="30dp"
+                android:src="@drawable/edit_ic_gamma"/>
+
+            <SeekBar
+                style="@style/SeekbarStyle"
+                android:id="@+id/edit_seek_gamma"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/edit_ic_hue"
+                android:layout_alignTop="@id/edit_ic_gamma"
+                android:progress="100"
+                android:max="200"/>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

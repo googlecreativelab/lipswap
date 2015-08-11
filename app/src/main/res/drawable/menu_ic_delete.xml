@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/menu_ic_delete_on" android:state_pressed="true" android:state_enabled="true"/>
+    <item android:drawable="@drawable/menu_ic_delete_off"/>
+</selector>
