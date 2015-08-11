@@ -8,7 +8,7 @@ Download it in the [Play Store](https://play.google.com/store/apps/details?id=co
 More Info
 ---------
 
-Lip Flip is built on top of another Android Experiment library called [shadercam](http://github.com/googlecreativelab/shadercam).
+Lip Swap is built on top of another Android Experiment library called [shadercam](http://github.com/googlecreativelab/shadercam).
 Go check it out to build more apps that use the latest camera2 apis with opengl shaders!
 
 Check out more [Android Experiments](http://www.androidexperiments.com) and submit your own experiment!
