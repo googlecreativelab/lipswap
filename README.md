@@ -3,7 +3,7 @@ Lip Swap
 
 Mash together photos and videos using Lip Swap, which allows you to replace elements of a photo with your own recorded video. Save the result, and share with friends.
 
-Download it in the Play Store : [link coming](https://play.google.com/store/apps/details?id=com.androidexperiments.lipflip)
+Download it in the [Play Store](https://play.google.com/store/apps/details?id=com.androidexperiments.lipflip)
 
 More Info
 ---------
