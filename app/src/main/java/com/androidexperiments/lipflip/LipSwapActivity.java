@@ -161,27 +161,33 @@ public class LipSwapActivity extends Activity
         mSeekGamma.setOnSeekBarChangeListener(new SimpleOnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mRenderer.setGamma((float) progress / (float) seekBar.getMax());
+                if(mRenderer != null)
+                    mRenderer.setGamma((float) progress / (float) seekBar.getMax());
             }
         });
 
         mSeekHue.setOnSeekBarChangeListener(new SimpleOnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mRenderer.setHue((progress) / 100.f);
+                if(mRenderer != null)
+                    mRenderer.setHue((progress) / 100.f);
             }
         });
     }
 
     private void setupCameraFragment() {
-        mCameraFragment = CameraFragment.getInstance();
-        mCameraFragment.setCameraToUse(CameraFragment.CAMERA_FORWARD); //pick which camera u want to use, we default to forward
-        mCameraFragment.setTextureView(mTextureView); //set textureview in our inflated layout
+        if(mCameraFragment == null) {
+            mCameraFragment = CameraFragment.getInstance();
+            mCameraFragment.setCameraToUse(CameraFragment.CAMERA_FORWARD); //pick which camera u want to use, we default to forward
+            mCameraFragment.setTextureView(mTextureView); //set textureview in our inflated layout
+        }
 
-        //add fragment to our setup and let it work its magic
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.add(mCameraFragment, TAG_CAMERA_FRAGMENT);
-        transaction.commit();
+        if(getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT) == null || !getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT).isAdded()) {
+            //add fragment to our setup and let it work its magic
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.add(mCameraFragment, TAG_CAMERA_FRAGMENT);
+            transaction.commit();
+        }
     }
 
     @Override
@@ -189,8 +195,6 @@ public class LipSwapActivity extends Activity
         super.onResume();
 
         AndroidUtils.goFullscreen(this);
-
-        mPaintView.setOnNewBitmapReadyListener(this);
 
         mRecordBtn.setEnabled(true);
 
@@ -203,6 +207,9 @@ public class LipSwapActivity extends Activity
     @Override
     protected void onPause()
     {
+        mPaintView.setOnNewBitmapReadyListener(null);
+        mTextureView.setSurfaceTextureListener(null);
+
         if(mIsRecording) {
             stopRecording();
         }
@@ -211,9 +218,6 @@ public class LipSwapActivity extends Activity
             mRestartCamera = true;
             shutdownCamera();
         }
-
-        mPaintView.setOnNewBitmapReadyListener(null);
-        mTextureView.setSurfaceTextureListener(null);
 
         super.onPause();
     }
@@ -313,7 +317,7 @@ public class LipSwapActivity extends Activity
                 String type = intent.getType();
 
                 if (Intent.ACTION_SEND.equals(action) && type != null && type.startsWith("image/")) {
-                    imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                    imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 }
             }
 
@@ -376,8 +380,6 @@ public class LipSwapActivity extends Activity
 
     private void hideEditControls()
     {
-        mRenderer.setGamma(1.f);
-
         int marginBottom = getResources().getDimensionPixelSize(R.dimen.margin_bottom);
 
         mEditContainer.startAnimation(mHideEditAnim);
@@ -422,6 +424,9 @@ public class LipSwapActivity extends Activity
 
         mRenderer.start();
 
+        //now that renderer is created and ready, await new bitmaps
+        mPaintView.setOnNewBitmapReadyListener(this);
+
         //initial config if needed
         mCameraFragment.configureTransform(width, height);
     }
@@ -437,7 +442,10 @@ public class LipSwapActivity extends Activity
     @Override
     public void onNewBitmapReady(Bitmap bitmap)
     {
-        Log.d(TAG, "onNewBitmapReady()");
+        //renderer isnt ready, don't push bitmap
+        if(mRenderer == null)
+            return;
+
         Bitmap copy = mPaintView.getDrawingCopy();
         mRenderer.updatePaintTexture(copy);
     }
