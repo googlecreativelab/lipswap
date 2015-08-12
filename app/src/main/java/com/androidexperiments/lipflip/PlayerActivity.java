@@ -90,7 +90,7 @@ public class PlayerActivity extends FragmentActivity implements AndroidUtils.OnD
         mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Log.i(TAG, "onCompletion: " + Arrays.toString(mp.getTrackInfo()));
+//                Log.i(TAG, "onCompletion: " + Arrays.toString(mp.getTrackInfo()));
                 showControls();
             }
         });

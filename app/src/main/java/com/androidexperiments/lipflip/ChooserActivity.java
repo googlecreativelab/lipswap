@@ -84,6 +84,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      * Only play intro video when its first time
      */
     private boolean mIsFirstRun;
+    private String[] mFilesToDelete = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,10 +191,12 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
             }
 
             //will only be one file but comes conveniently as string array already
-            String[] filesToDelete = intent.getExtras().getStringArray(EXTRA_DELETE_FILE);
-            if (filesToDelete != null && filesToDelete.length > 0) {
+            //but we need to wait until onResume to do that
+            mFilesToDelete = intent.getExtras().getStringArray(EXTRA_DELETE_FILE);
+
+            if (mFilesToDelete != null && mFilesToDelete.length > 0) {
                 //we already have method to handle this - so handle it already, will ya!
-                onDeleteFilesComplete(filesToDelete);
+                onDeleteFilesComplete(mFilesToDelete);
             }
         }
     }
@@ -394,8 +397,6 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
                     }
                 }
 
-                Log.d(TAG, "outputfile: " + outputFileUri + " isCamera: " + isCamera + " action: " + action + " data: " + data);
-
                 Uri selectedImageUri;
                 if (isCamera) {
                     selectedImageUri = outputFileUri;
@@ -425,6 +426,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
         final String fname = "lip_img_" + System.currentTimeMillis() + ".jpg";
         final File sdImageMainDirectory = new File(root, fname);
         outputFileUri = Uri.fromFile(sdImageMainDirectory);
+
         return outputFileUri;
     }
 
@@ -452,6 +454,9 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      */
     @Override
     public void onDeleteFilesComplete(String[] filesToDelete) {
+        if(filesToDelete.length == 0 || mChooserAdapter == null)
+            return;
+
         //remove from adapter - have to create array from array, yay
         ArrayList<File> files = new ArrayList<>();
         for (String file : filesToDelete) {

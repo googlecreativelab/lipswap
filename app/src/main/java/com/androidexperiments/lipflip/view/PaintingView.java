@@ -65,7 +65,6 @@ public class PaintingView extends View
         float y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                touchStart(x, y);
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -73,16 +72,11 @@ public class PaintingView extends View
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                touchUp(x, y);
+                touchUp();
                 invalidate();
                 break;
         }
         return true;
-    }
-
-    private void touchStart(float x, float y)
-    {
-        Log.d(TAG, "touchStart() " + x + ", " + y);
     }
 
     private void touchMove(float x, float y)
@@ -90,20 +84,9 @@ public class PaintingView extends View
         mMainCanvas.drawBitmap(mBitmapBrush, Math.round(x - mBitmapBrushDimensions.x / 2), Math.round(y - mBitmapBrushDimensions.y / 2), null);
     }
 
-    private void touchUp(float x, float y)
-    {
-        Log.d(TAG, "touchUp() " + x + ", " + y);
-
+    private void touchUp() {
         if(mOnNewBitmapReadyListener != null)
             mOnNewBitmapReadyListener.onNewBitmapReady(mMainBitmap);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
-        //set width and height the same
-//        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(widthMeasureSpec));
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -130,7 +113,7 @@ public class PaintingView extends View
      * interface for grabbing the new image cache whenever its ready from touch up
      */
     public interface OnNewBitmapReadyListener {
-        public void onNewBitmapReady(Bitmap bitmap);
+        void onNewBitmapReady(Bitmap bitmap);
     }
 
     private OnNewBitmapReadyListener mOnNewBitmapReadyListener;
