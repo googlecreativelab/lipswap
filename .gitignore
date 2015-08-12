@@ -15,3 +15,6 @@ security-review/
 design/
 launch-files/
 swap_current.sh
+
+#fabric
+/app/fabric.properties

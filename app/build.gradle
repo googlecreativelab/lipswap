@@ -8,8 +8,8 @@ android {
         applicationId "com.androidexperiments.lipflip"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 18
-        versionName "1.0"
+        versionCode 21
+        versionName "1.0.2"
     }
     buildTypes {
         release {
@@ -26,7 +26,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
 
     //useful
-    compile 'com.androidexperiments:shadercam:1.0.1' //shader manipulation of camera
+    compile 'com.androidexperiments:shadercam:1.0.2' //shader manipulation of camera
     compile 'com.jakewharton:butterknife:7.0.1' //dependency injection
     compile 'uk.co.chrisjenx:calligraphy:2.1.0' //textview font injection
 }
