@@ -1,7 +1,7 @@
 package com.androidexperiments.lipflip;
 
-import android.app.Activity;
-import android.app.FragmentTransaction;
+import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
@@ -36,20 +38,25 @@ import com.androidexperiments.lipflip.utils.SimpleOnSeekBarChangeListener;
 import com.androidexperiments.lipflip.view.FirstTimeView;
 import com.androidexperiments.lipflip.view.PaintingView;
 import com.androidexperiments.shadercam.fragments.CameraFragment;
-import com.androidexperiments.shadercam.gl.CameraRenderer;
+import com.androidexperiments.shadercam.fragments.PermissionsHelper;
+import com.androidexperiments.shadercam.fragments.VideoFragment;
+import com.androidexperiments.shadercam.gl.VideoRenderer;
+import com.uncorkedstudios.android.view.recordablesurfaceview.RecordableSurfaceView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LipSwapActivity extends Activity
+public class LipSwapActivity extends FragmentActivity
         implements
-        CameraRenderer.OnRendererReadyListener,
+        PermissionsHelper.PermissionsListener,
         PaintingView.OnNewBitmapReadyListener
 {
     private static final String TAG = LipSwapActivity.class.getSimpleName();
@@ -64,7 +71,8 @@ public class LipSwapActivity extends Activity
     private static final String KEY_IS_FIRST_TIME = "key_is_first_time";
 
     //injections! butterknife!
-    @Bind(R.id.texture) TextureView mTextureView;
+    @Bind(R.id.recordable_surface_view)
+    RecordableSurfaceView mRecordableSurfaceView;
     @Bind(R.id.paintView) PaintingView mPaintView;
     @Bind(R.id.btn_record) ImageButton mRecordBtn;
     @Bind(R.id.btn_edit) ImageButton mEditBtn;
@@ -76,7 +84,7 @@ public class LipSwapActivity extends Activity
      * handy stand-alone fragment that encapslates all of Camera2 apis and
      * handles everything neatly (mostly, kinda, sorta)
      */
-    private CameraFragment mCameraFragment;
+    private VideoFragment mCameraFragment;
 
     private Bitmap mInitialBitmap;
 
@@ -105,6 +113,12 @@ public class LipSwapActivity extends Activity
 
     private boolean mRestartCamera = false;
 
+
+    private PermissionsHelper mPermissionsHelper;
+
+    private boolean mPermissionsSatisfied = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -117,7 +131,24 @@ public class LipSwapActivity extends Activity
 
         setupEditViews();
         setupCameraFragment();
+        //setup permissions for M or start normally
+        if (PermissionsHelper.isMorHigher()) {
+            setupPermissions();
+        }
     }
+
+
+
+    private void setupPermissions() {
+        mPermissionsHelper = PermissionsHelper.attach(this);
+        mPermissionsHelper.setRequestedPermissions(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+
+        );
+    }
+
 
     private void checkFirstTime()
     {
@@ -176,18 +207,39 @@ public class LipSwapActivity extends Activity
     }
 
     private void setupCameraFragment() {
-        if(mCameraFragment == null) {
-            mCameraFragment = CameraFragment.getInstance();
-            mCameraFragment.setCameraToUse(CameraFragment.CAMERA_FORWARD); //pick which camera u want to use, we default to forward
-            mCameraFragment.setTextureView(mTextureView); //set textureview in our inflated layout
+//        if(mCameraFragment == null) {
+//            mCameraFragment = CameraFragment.getInstance();
+//            mCameraFragment.setCameraToUse(CameraFragment.CAMERA_FORWARD); //pick which camera u want to use, we default to forward
+//            mCameraFragment.setTextureView(mRecordableSurfaceView); //set textureview in our inflated layout
+//        }
+//
+//        if(getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT) == null || !getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT).isAdded()) {
+//            //add fragment to our setup and let it work its magic
+//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+//            transaction.add(mCameraFragment, TAG_CAMERA_FRAGMENT);
+//            transaction.commit();
+//        }
+
+
+
+        if (mCameraFragment != null) {
+            mCameraFragment.onPause();
+            mCameraFragment.closeCamera();
+            mCameraFragment.setCameraToUse(VideoFragment.CAMERA_FORWARD);
+            mCameraFragment.onResume();
+            mCameraFragment.openCamera();
+            return;
         }
 
-        if(getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT) == null || !getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT).isAdded()) {
-            //add fragment to our setup and let it work its magic
-            FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction.add(mCameraFragment, TAG_CAMERA_FRAGMENT);
-            transaction.commit();
-        }
+        mCameraFragment = VideoFragment.getInstance();
+        mCameraFragment.setCameraToUse(VideoFragment.CAMERA_FORWARD);
+        //mCameraFragment.setSurfaceTextureListener(mCameraTextureListener);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(mCameraFragment, TAG_CAMERA_FRAGMENT);
+        transaction.commit();
+        mCameraFragment.setRecordableSurfaceView(mRecordableSurfaceView);
+
     }
 
     @Override
@@ -195,20 +247,31 @@ public class LipSwapActivity extends Activity
         super.onResume();
 
         AndroidUtils.goFullscreen(this);
+        if (PermissionsHelper.isMorHigher() && !mPermissionsSatisfied) {
+//            if (!mPermissionsHelper.checkPermissions()) {
+//                return;
+//            } else {
+                mPermissionsSatisfied
+                        = true; //extra helper as callback sometimes isnt quick enough for future results
+                setReady();
+
+//            }
+        }
 
         mRecordBtn.setEnabled(true);
-
-        if(!mTextureView.isAvailable())
-            mTextureView.setSurfaceTextureListener(mTextureListener); //set listener to handle when its ready
-        else
-            setReady(mTextureView.getSurfaceTexture(), mTextureView.getWidth(), mTextureView.getHeight());
+//
+//        if(!mRecordableSurfaceView.isAvailable())
+//            mRecordableSurfaceView.setSurfaceTextureListener(mTextureListener); //set listener to handle when its ready
+//        else
+//            setReady(mRecordableSurfaceView.getSurfaceTexture(), mRecordableSurfaceView.getWidth(), mRecordableSurfaceView
+//                    .getHeight());
     }
 
     @Override
     protected void onPause()
     {
         mPaintView.setOnNewBitmapReadyListener(null);
-        mTextureView.setSurfaceTextureListener(null);
+//        mRecordableSurfaceView.setSurfaceTextureListener(null);
 
         if(mIsRecording) {
             stopRecording();
@@ -256,15 +319,19 @@ public class LipSwapActivity extends Activity
             }
         }, 250);
 
-        mOutputFile = getFile("lipflip_");
-        mRenderer.startRecording(mOutputFile);
+//        mOutputFile = getFile("lipflip_");
+//        mRenderer.startRecording(mOutputFile);
+        mRecordableSurfaceView.startRecording();
+        mIsRecording = true;
     }
 
     private void stopRecording()
     {
-        mRenderer.stopRecording();
+//        mRenderer.stopRecording();
+        mRecordableSurfaceView.stopRecording();
+        mIsRecording = false;
 
-        shutdownCamera();
+//        shutdownCamera();
     }
 
     private void shutdownCamera()
@@ -274,7 +341,7 @@ public class LipSwapActivity extends Activity
 
             mBitmapHandler = null;
 
-            mRenderer.getRenderHandler().sendShutdown();
+//            mRenderer.getRenderHandler().sendShutdown();
             mRenderer = null;
         }
     }
@@ -346,14 +413,17 @@ public class LipSwapActivity extends Activity
         try {
             // http://stackoverflow.com/questions/20478765/how-to-get-the-correct-orientation-of-the-image-selected-from-the-default-image
             Log.i(TAG, "file uri: " + fileUri);
-            exif = new ExifInterface(FileUtils.getPath(this, fileUri));
+            ContentResolver cr = getContentResolver();
+            InputStream is = cr.openInputStream(fileUri);
+
+            exif = new ExifInterface(is);
             orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
         }
         catch (IllegalArgumentException | IOException issue) {
             //this is only responsible for potentially rotating landscape images taken on phone, seems okay
             //if it fails and we move on as normal - altho some devices lag during this process, presumably
             //because drive is downloading the large-res image when its selected?
-            Log.e(TAG, "ExifData error. Typically from drive images.\n e: " + issue.getMessage());
+            Log.e(TAG, "ExifData error. Typically from drive images.",  issue);
         }
 
         BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -408,27 +478,48 @@ public class LipSwapActivity extends Activity
         mEditContainer.setVisibility(View.VISIBLE);
     }
 
-    private void setReady(SurfaceTexture surface, int width, int height)
-    {
+    private void setReady() {
         getImage(getIntent());
 
         //then setup our camera renderer
-        mRenderer = new LipFlipRenderer(this, surface, mCameraFragment, width, height);
+        mRenderer = new LipFlipRenderer(this);
 
         mBitmapHandler = new BitmapHandler(this);
 
         mRenderer.setBitmapHandler(mBitmapHandler);
         mRenderer.setInitialBitmap(mInitialBitmap);
         mRenderer.setPaintTexture(mPaintView.getDrawingCopy());
-        mRenderer.setOnRendererReadyListener(this);
+//        mRenderer.setOnRendererReadyListener(this);
 
-        mRenderer.start();
+//        mRenderer.start();
 
         //now that renderer is created and ready, await new bitmaps
         mPaintView.setOnNewBitmapReadyListener(this);
 
         //initial config if needed
-        mCameraFragment.configureTransform(width, height);
+//        mCameraFragment.configureTransform(width, height);
+        mRecordableSurfaceView.resume();
+
+        if (mPermissionsSatisfied) {
+//            mRenderer.start();
+//            mCameraFragment.configureTransform(width, height);
+            try {
+                mOutputFile = getFile("lipflip_");
+                android.graphics.Point size = new android.graphics.Point();
+                getWindowManager().getDefaultDisplay().getRealSize(size);
+                mRecordableSurfaceView.initRecorder(mOutputFile, size.x, size.y, null, null);
+                mCameraFragment.setVideoRenderer(mRenderer);
+
+            } catch (IOException ioex) {
+                Log.e(TAG, "Couldn't re-init recording", ioex);
+            }
+
+        } else {
+            if (PermissionsHelper.isMorHigher()) {
+                setupPermissions();
+            }
+        }
+
     }
 
     private File getFile(String prefix) {
@@ -463,67 +554,81 @@ public class LipSwapActivity extends Activity
         intent.putExtra(PlayerActivity.EXTRA_FILE_PATH, filePath);
         startActivity(intent);
     }
+//
+//    @Override
+//    public void onRendererReady()
+//    {
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.d(TAG, "openCamera() called. videoSize: " + mCameraFragment.getVideoSize());
+//                mCameraFragment.setPreviewTexture(mRenderer.getPreviewTexture());
+//                mCameraFragment.openCamera();
+//
+//            }
+//        });
+//    }
+//
+//    @Override
+//    public void onRendererFinished()
+//    {
+//        if(!mRestartCamera)
+//            runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                showRecordedFile(mOutputFile.getAbsolutePath());
+//            }
+//        });
+//
+//        mRestartCamera = false;
+//    }
+//
+//    /**
+//     * {@link android.view.TextureView.SurfaceTextureListener} handles several lifecycle events on a
+//     * {@link android.view.TextureView}.
+//     */
+//    private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener()
+//    {
+//        @Override
+//        public void onSurfaceTextureAvailable(SurfaceTexture surface, final int width, final int height)
+//        {
+//            setReady(surface, width, height);
+//        }
+//
+//        @Override
+//        public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height)
+//        {
+//            Log.d(TAG, "onSurfaceTextureSizeChanged() " + width + ", " + height);
+//
+//            mCameraFragment.configureTransform(width, height);
+//        }
+//
+//        @Override
+//        public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture)
+//        {
+//            Log.d(TAG, "onSurfaceTextureDestroyed()");
+//            return true;
+//        }
+//
+//        @Override
+//        public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture)
+//        {
+//        }
+//    };
 
     @Override
-    public void onRendererReady()
-    {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "openCamera() called. videoSize: " + mCameraFragment.getVideoSize());
-                mCameraFragment.setPreviewTexture(mRenderer.getPreviewTexture());
-                mCameraFragment.openCamera();
-
-            }
-        });
+    public void onPermissionsSatisfied() {
+        mPermissionsSatisfied = true;
     }
 
     @Override
-    public void onRendererFinished()
-    {
-        if(!mRestartCamera)
-            runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                showRecordedFile(mOutputFile.getAbsolutePath());
-            }
-        });
-
-        mRestartCamera = false;
+    public void onPermissionsFailed(String[] strings) {
+        Log.e(TAG, "onPermissionsFailed()" + Arrays.toString(strings));
+        mPermissionsSatisfied = false;
+        Toast.makeText(this, "shadercam needs all permissions to function, please try again.",
+                Toast.LENGTH_LONG).show();
+        this.finish();
     }
-
-    /**
-     * {@link android.view.TextureView.SurfaceTextureListener} handles several lifecycle events on a
-     * {@link android.view.TextureView}.
-     */
-    private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener()
-    {
-        @Override
-        public void onSurfaceTextureAvailable(SurfaceTexture surface, final int width, final int height)
-        {
-            setReady(surface, width, height);
-        }
-
-        @Override
-        public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height)
-        {
-            Log.d(TAG, "onSurfaceTextureSizeChanged() " + width + ", " + height);
-
-            mCameraFragment.configureTransform(width, height);
-        }
-
-        @Override
-        public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture)
-        {
-            Log.d(TAG, "onSurfaceTextureDestroyed()");
-            return true;
-        }
-
-        @Override
-        public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture)
-        {
-        }
-    };
 
     /**
      * Handler responsible for notifying UI that our update is complete

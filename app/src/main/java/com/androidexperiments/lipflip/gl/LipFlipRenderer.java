@@ -8,6 +8,7 @@ import android.os.Handler;
 
 import com.androidexperiments.shadercam.fragments.CameraFragment;
 import com.androidexperiments.shadercam.gl.CameraRenderer;
+import com.androidexperiments.shadercam.gl.VideoRenderer;
 
 
 /**
@@ -18,7 +19,7 @@ import com.androidexperiments.shadercam.gl.CameraRenderer;
  * any app capable of sharing images via intent. second texture
  * is used as a mask, which is drawn by your finger
  */
-public class LipFlipRenderer extends CameraRenderer
+public class LipFlipRenderer extends VideoRenderer
 {
     private static final String TAG = LipFlipRenderer.class.getSimpleName();
 
@@ -35,10 +36,10 @@ public class LipFlipRenderer extends CameraRenderer
     private float mHue = 0.f;
     private float mImageAspectRatio = 1.f;
 
-    public LipFlipRenderer(Context context, SurfaceTexture texture, CameraFragment cameraFragment, int width, int height)
+    public LipFlipRenderer(Context context)
     {
         //use new vert and frag shaders
-        super(context, texture, cameraFragment, width, height, "lip_service.frag", "lip_service.vert");
+        super(context, "lip_service.frag", "lip_service.vert");
     }
 
     @Override
@@ -148,9 +149,9 @@ public class LipFlipRenderer extends CameraRenderer
 
         //todo - rename to what this really is?
 
-        if(mImageAspectRatio == mSurfaceAspectRatio)
+        if(mImageAspectRatio == 0.0f)
             mImageAspectRatio = 1.f;
-        else if(mImageAspectRatio > mSurfaceAspectRatio)
+        else if(mImageAspectRatio > 0.0f)
         {
             float nw = ((float)mSurfaceHeight / imgHeight) * imgWidth;
             mImageAspectRatio = mSurfaceWidth / nw;
