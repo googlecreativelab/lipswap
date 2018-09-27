@@ -107,7 +107,6 @@
     <orderEntry type="library" name="Gradle: android.arch.lifecycle:common:1.1.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-fragment-27.1.1" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-annotations:27.1.1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: __local_aars__:/Users/dave/.gradle/caches/transforms-1/files-1.1/shadercam-release.aar/76f3363ec267f7af28b09236206393b6:unspecified@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable-27.1.1" level="project" />
     <orderEntry type="library" name="Gradle: android.arch.core:runtime-1.1.0" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-compat-27.1.1" level="project" />
@@ -122,5 +121,6 @@
     <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-27.1.1" level="project" />
     <orderEntry type="library" name="Gradle: android.arch.lifecycle:runtime-1.1.0" level="project" />
     <orderEntry type="library" name="Gradle: com.uncorkedstudios.android:recordable-surfaceview-1.1.1" level="project" />
+    <orderEntry type="library" name="Gradle: __local_aars__:/Users/dave/.gradle/caches/transforms-1/files-1.1/shadercam-release.aar/0c39d54b7e9205770af7510556902aee:unspecified@jar" level="project" />
   </component>
 </module>

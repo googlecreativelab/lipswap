@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingBottom="100dp"
-        android:visibility="gone"
+        android:visibility="visible"
         android:text="@string/get_started"/>
 
     <include layout="@layout/view_chooser_photo_choose_overlay" />

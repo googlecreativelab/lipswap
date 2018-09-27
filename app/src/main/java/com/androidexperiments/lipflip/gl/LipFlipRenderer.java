@@ -36,10 +36,15 @@ public class LipFlipRenderer extends VideoRenderer
     private float mHue = 0.f;
     private float mImageAspectRatio = 1.f;
 
-    public LipFlipRenderer(Context context)
+    protected float mSurfaceAspectRatio;
+
+    public LipFlipRenderer(Context context, int width, int height)
     {
         //use new vert and frag shaders
         super(context, "lip_service.frag", "lip_service.vert");
+        mSurfaceAspectRatio = ((1.0f * width) / (1.0f * height));
+        mSurfaceHeight = height;
+        mSurfaceWidth = width;
     }
 
     @Override
@@ -149,9 +154,9 @@ public class LipFlipRenderer extends VideoRenderer
 
         //todo - rename to what this really is?
 
-        if(mImageAspectRatio == 0.0f)
+        if(mImageAspectRatio == mSurfaceAspectRatio)
             mImageAspectRatio = 1.f;
-        else if(mImageAspectRatio > 0.0f)
+        else if(mImageAspectRatio > mSurfaceAspectRatio)
         {
             float nw = ((float)mSurfaceHeight / imgHeight) * imgWidth;
             mImageAspectRatio = mSurfaceWidth / nw;

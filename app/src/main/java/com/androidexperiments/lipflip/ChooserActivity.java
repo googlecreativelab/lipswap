@@ -51,7 +51,8 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
 public class ChooserActivity extends AppCompatActivity
-        implements AndroidUtils.OnDeleteFilesCompleteListener {
+        implements AndroidUtils.OnDeleteFilesCompleteListener,
+        PermissionsHelper.PermissionsListener {
 
     private static final String TAG = ChooserActivity.class.getSimpleName();
 
@@ -316,6 +317,7 @@ public class ChooserActivity extends AppCompatActivity
      * handle everything in an AsycTask because file i/o sometimes takes a while, don't want to lock UI
      */
     private void setupList() {
+        mGetStartedText.setVisibility(View.VISIBLE);
         mProgressLoader.setVisibility(View.VISIBLE);
         new GetLipFlipsTask(this).execute();
     }
@@ -325,8 +327,13 @@ public class ChooserActivity extends AppCompatActivity
         super.onResume();
 
         if (mIsFirstRun) {
-            startIntro();
-            mIsFirstRun = false;
+
+            if (PermissionsHelper.isMorHigher()) {
+                setupPermissions();
+            } else {
+                startIntro();
+                mIsFirstRun = false;
+            }
         } else {
             //every time we come back from anywhere, check to see if anything is gone/added
             //issue 52 from not following original ux flow, poor design
@@ -367,10 +374,6 @@ public class ChooserActivity extends AppCompatActivity
     @OnClick(R.id.btn_use_camera)
     public void onClickUseCameraBtn() {
 
-        if (PermissionsHelper.isMorHigher()) {
-            setupPermissions();
-        }
-
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getImageUri());
@@ -380,13 +383,14 @@ public class ChooserActivity extends AppCompatActivity
 
 
     private void setupPermissions() {
-        mPermissionsHelper = PermissionsHelper.attach(getSupportFragmentManager());
+        mPermissionsHelper = PermissionsHelper.attach(this);
         mPermissionsHelper.setRequestedPermissions(
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
 
         );
+        mPermissionsHelper.checkAppCompatPermissions(this);
     }
 
 
@@ -451,9 +455,10 @@ public class ChooserActivity extends AppCompatActivity
         root.mkdirs();
         final String fname = "lip_img_" + System.currentTimeMillis() + ".jpg";
         final File sdImageMainDirectory = new File(root, fname);
-//        outputFileUri = Uri.fromFile(sdImageMainDirectory);
         outputFileUri = FileProvider
-                .getUriForFile(this, this.getApplicationContext().getPackageName() + ".utils.provider", sdImageMainDirectory);
+                .getUriForFile(this,
+                        this.getApplicationContext().getPackageName() + ".utils.provider",
+                        sdImageMainDirectory);
 
         return outputFileUri;
     }
@@ -542,6 +547,17 @@ public class ChooserActivity extends AppCompatActivity
             startActivity(intent);
         }
     };
+
+    @Override
+    public void onPermissionsSatisfied() {
+        startIntro();
+        mIsFirstRun = false;
+    }
+
+    @Override
+    public void onPermissionsFailed(String[] strings) {
+        finish();
+    }
 
     /**
      * gridview listener for multiple choice listeners, static with weak activity ref for callbacks
