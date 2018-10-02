@@ -53,6 +53,11 @@ public class PaintingView extends View {
         this.setDrawingCacheEnabled(true);
     }
 
+    public void hintSize(int w, int h) {
+        mMainBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        mMainCanvas = new Canvas(mMainBitmap);
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mMainBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);

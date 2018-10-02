@@ -51,7 +51,7 @@ void main ()
     /* gamma adjustment */
     cameraColor = setGamma(cameraColor, gamma);
 
-    if(paint.a > 0.0)
+    if(paint.a >= 0.0)
     {
         //if image is part of alpha fade of the faceTexture, mix the camera and the face
         //pixels together and then add a bit extra from the face to make sure its still solid

@@ -8,6 +8,7 @@ import com.androidexperiments.lipflip.view.FirstTimeView;
 import com.androidexperiments.lipflip.view.PaintingView;
 import com.androidexperiments.shadercam.fragments.PermissionsHelper;
 import com.androidexperiments.shadercam.fragments.VideoFragment;
+import com.androidexperiments.shadercam.gl.VideoRenderer;
 import com.uncorkedstudios.android.view.recordablesurfaceview.RecordableSurfaceView;
 
 import android.content.ContentResolver;
@@ -89,7 +90,7 @@ public class LipSwapActivity extends FragmentActivity
      * handy stand-alone fragment that encapslates all of Camera2 apis and
      * handles everything neatly (mostly, kinda, sorta)
      */
-    private VideoFragment mCameraFragment;
+    private VideoFragment mVideoFragment;
 
     private Bitmap mInitialBitmap;
 
@@ -132,7 +133,6 @@ public class LipSwapActivity extends FragmentActivity
         checkFirstTime();
 
         setupEditViews();
-        setupCameraFragment();
         getImage(getIntent());
     }
 
@@ -205,37 +205,17 @@ public class LipSwapActivity extends FragmentActivity
         });
     }
 
-    private void setupCameraFragment() {
-//        if(mCameraFragment == null) {
-//            mCameraFragment = CameraFragment.getInstance();
-//            mCameraFragment.setCameraToUse(CameraFragment.CAMERA_FORWARD); //pick which camera u want to use, we default to forward
-//            mCameraFragment.setTextureView(mRecordableSurfaceView); //set textureview in our inflated layout
-//        }
-//
-//        if(getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT) == null || !getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT).isAdded()) {
-//            //add fragment to our setup and let it work its magic
-//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//            transaction.add(mCameraFragment, TAG_CAMERA_FRAGMENT);
-//            transaction.commit();
-//        }
+    private void setupCameraFragment(VideoRenderer renderer) {
 
-        if (mCameraFragment != null) {
-            mCameraFragment.onPause();
-            mCameraFragment.closeCamera();
-            mCameraFragment.setCameraToUse(VideoFragment.CAMERA_FORWARD);
-            mCameraFragment.onResume();
-            mCameraFragment.openCamera();
-            return;
-        }
-
-        mCameraFragment = VideoFragment.getInstance();
-        mCameraFragment.setCameraToUse(VideoFragment.CAMERA_FORWARD);
-        //mCameraFragment.setSurfaceTextureListener(mCameraTextureListener);
+        mVideoFragment = VideoFragment.getInstance();
+        mVideoFragment.setCameraToUse(VideoFragment.CAMERA_FORWARD);
+        mVideoFragment.setRecordableSurfaceView(mRecordableSurfaceView);
+        mVideoFragment.setVideoRenderer(renderer);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(mCameraFragment, TAG_CAMERA_FRAGMENT);
+        transaction.add(mVideoFragment, TAG_CAMERA_FRAGMENT);
         transaction.commit();
-        mCameraFragment.setRecordableSurfaceView(mRecordableSurfaceView);
+        mVideoFragment.setRecordableSurfaceView(mRecordableSurfaceView);
 
     }
 
@@ -258,16 +238,16 @@ public class LipSwapActivity extends FragmentActivity
     @Override
     protected void onPause() {
         mPaintView.setOnNewBitmapReadyListener(null);
-//        mRecordableSurfaceView.setSurfaceTextureListener(null);
 
         if (mIsRecording) {
             stopRecording();
         } else {
             //if paused, make sure we shutdown and restart cam on resume
             mRestartCamera = true;
-            shutdownCamera();
         }
 
+        mRecordableSurfaceView.pause();
+        shutdownCamera();
         super.onPause();
     }
 
@@ -315,14 +295,12 @@ public class LipSwapActivity extends FragmentActivity
     }
 
     private void shutdownCamera() {
-        if (mRenderer != null) {
-            mCameraFragment.closeCamera();
+        mRenderer = null;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.remove(mVideoFragment);
+        ft.commit();
+        mVideoFragment = null;
 
-            mBitmapHandler = null;
-
-//            mRenderer.getRenderHandler().sendShutdown();
-            mRenderer = null;
-        }
     }
 
     @OnClick(R.id.btn_back)
@@ -458,34 +436,28 @@ public class LipSwapActivity extends FragmentActivity
 
         //then setup our camera renderer
         mRenderer = new LipFlipRenderer(this, size.x, size.y);
-
         mBitmapHandler = new BitmapHandler(this);
 
         mRenderer.setBitmapHandler(mBitmapHandler);
         mRenderer.setInitialBitmap(mInitialBitmap);
 
         mRenderer.setPaintTexture(mPaintView.getDrawingCopy(size.x, size.y));
-//        mRenderer.setOnRendererReadyListener(this);
-//        mRenderer.start();
+        setupCameraFragment(mRenderer);
 
         //now that renderer is created and ready, await new bitmaps
         mPaintView.setOnNewBitmapReadyListener(this);
-
+        mPaintView.hintSize(size.x, size.y);
         //initial config if needed
-//        mCameraFragment.configureTransform(width, height);
         mRecordableSurfaceView.resume();
 
-//            mRenderer.start();
-//            mCameraFragment.configureTransform(width, height);
         try {
             mOutputFile = getFile("lipflip_");
             mRecordableSurfaceView.initRecorder(mOutputFile, size.x, size.y, null, null);
-            mCameraFragment.setVideoRenderer(mRenderer);
+            mVideoFragment.setVideoRenderer(mRenderer);
 
         } catch (IOException ioex) {
             Log.e(TAG, "Couldn't re-init recording", ioex);
         }
-
 
     }
 
@@ -528,9 +500,9 @@ public class LipSwapActivity extends FragmentActivity
 //        runOnUiThread(new Runnable() {
 //            @Override
 //            public void run() {
-//                Log.d(TAG, "openCamera() called. videoSize: " + mCameraFragment.getVideoSize());
-//                mCameraFragment.setPreviewTexture(mRenderer.getPreviewTexture());
-//                mCameraFragment.openCamera();
+//                Log.d(TAG, "openCamera() called. videoSize: " + mVideoFragment.getVideoSize());
+//                mVideoFragment.setPreviewTexture(mRenderer.getPreviewTexture());
+//                mVideoFragment.openCamera();
 //
 //            }
 //        });
@@ -567,7 +539,7 @@ public class LipSwapActivity extends FragmentActivity
 //        {
 //            Log.d(TAG, "onSurfaceTextureSizeChanged() " + width + ", " + height);
 //
-//            mCameraFragment.configureTransform(width, height);
+//            mVideoFragment.configureTransform(width, height);
 //        }
 //
 //        @Override
