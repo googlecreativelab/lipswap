@@ -94,6 +94,7 @@ public class PaintingView extends View {
         if (mOnNewBitmapReadyListener != null) {
             mOnNewBitmapReadyListener.onNewBitmapReady(mMainBitmap);
         }
+        this.clear();
     }
 
     @Override
