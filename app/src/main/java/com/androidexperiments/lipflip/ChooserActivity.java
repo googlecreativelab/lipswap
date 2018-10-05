@@ -3,6 +3,7 @@ package com.androidexperiments.lipflip;
 import com.androidexperiments.lipflip.adapters.ActualArrayAdapter;
 import com.androidexperiments.lipflip.data.Constants;
 import com.androidexperiments.lipflip.utils.AndroidUtils;
+import com.androidexperiments.lipflip.utils.FileUtils;
 import com.androidexperiments.lipflip.utils.SimpleAnimationListener;
 import com.androidexperiments.lipflip.view.GridViewItem;
 import com.androidexperiments.lipflip.view.IntroView;
@@ -381,6 +382,13 @@ public class ChooserActivity extends AppCompatActivity
         }
     }
 
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        FileUtils.cleanUpFileStubs();
+
+    }
 
     private void setupPermissions() {
         mPermissionsHelper = PermissionsHelper.attach(this);

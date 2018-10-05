@@ -3,6 +3,7 @@ package com.androidexperiments.lipflip;
 import com.androidexperiments.lipflip.data.Constants;
 import com.androidexperiments.lipflip.gl.LipFlipRenderer;
 import com.androidexperiments.lipflip.utils.AndroidUtils;
+import com.androidexperiments.lipflip.utils.FileUtils;
 import com.androidexperiments.lipflip.utils.SimpleOnSeekBarChangeListener;
 import com.androidexperiments.lipflip.view.FirstTimeView;
 import com.androidexperiments.lipflip.view.PaintingView;
@@ -19,6 +20,7 @@ import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
@@ -227,12 +229,7 @@ public class LipSwapActivity extends FragmentActivity
 
         mRecordBtn.setEnabled(true);
         setReady();
-//
-//        if(!mRecordableSurfaceView.isAvailable())
-//            mRecordableSurfaceView.setSurfaceTextureListener(mTextureListener); //set listener to handle when its ready
-//        else
-//            setReady(mRecordableSurfaceView.getSurfaceTexture(), mRecordableSurfaceView.getWidth(), mRecordableSurfaceView
-//                    .getHeight());
+
     }
 
     @Override
@@ -248,6 +245,9 @@ public class LipSwapActivity extends FragmentActivity
 
         mRecordableSurfaceView.pause();
         shutdownCamera();
+
+        FileUtils.cleanUpFileStubs();
+
         super.onPause();
     }
 
@@ -280,18 +280,13 @@ public class LipSwapActivity extends FragmentActivity
             }
         }, 250);
 
-//        mOutputFile = getFile("lipflip_");
-//        mRenderer.startRecording(mOutputFile);
         mRecordableSurfaceView.startRecording();
         mIsRecording = true;
     }
 
     private void stopRecording() {
-//        mRenderer.stopRecording();
         mRecordableSurfaceView.stopRecording();
         mIsRecording = false;
-
-//        shutdownCamera();
     }
 
     private void shutdownCamera() {
@@ -493,81 +488,7 @@ public class LipSwapActivity extends FragmentActivity
         intent.putExtra(PlayerActivity.EXTRA_FILE_PATH, filePath);
         startActivity(intent);
     }
-//
-//    @Override
-//    public void onRendererReady()
-//    {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Log.d(TAG, "openCamera() called. videoSize: " + mVideoFragment.getVideoSize());
-//                mVideoFragment.setPreviewTexture(mRenderer.getPreviewTexture());
-//                mVideoFragment.openCamera();
-//
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public void onRendererFinished()
-//    {
-//        if(!mRestartCamera)
-//            runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                showRecordedFile(mOutputFile.getAbsolutePath());
-//            }
-//        });
-//
-//        mRestartCamera = false;
-//    }
-//
-//    /**
-//     * {@link android.view.TextureView.SurfaceTextureListener} handles several lifecycle events on a
-//     * {@link android.view.TextureView}.
-//     */
-//    private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener()
-//    {
-//        @Override
-//        public void onSurfaceTextureAvailable(SurfaceTexture surface, final int width, final int height)
-//        {
-//            setReady(surface, width, height);
-//        }
-//
-//        @Override
-//        public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height)
-//        {
-//            Log.d(TAG, "onSurfaceTextureSizeChanged() " + width + ", " + height);
-//
-//            mVideoFragment.configureTransform(width, height);
-//        }
-//
-//        @Override
-//        public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture)
-//        {
-//            Log.d(TAG, "onSurfaceTextureDestroyed()");
-//            return true;
-//        }
-//
-//        @Override
-//        public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture)
-//        {
-//        }
-//    };
 
-//    @Override
-//    public void onPermissionsSatisfied() {
-//        mPermissionsSatisfied = true;
-//    }
-//
-//    @Override
-//    public void onPermissionsFailed(String[] strings) {
-//        Log.e(TAG, "onPermissionsFailed()" + Arrays.toString(strings));
-//        mPermissionsSatisfied = false;
-//        Toast.makeText(this, "shadercam needs all permissions to function, please try again.",
-//                Toast.LENGTH_LONG).show();
-//        this.finish();
-//    }
 
     /**
      * Handler responsible for notifying UI that our update is complete
