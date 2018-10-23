@@ -3,13 +3,13 @@ apply plugin: 'com.android.application'
 android {
 
     compileSdkVersion 28
-    buildToolsVersion '28.0.2'
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         applicationId "com.androidexperiments.lipflip"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 2
+        versionCode 3
         versionName '2.0.0'
     }
     buildTypes {
@@ -17,6 +17,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    lintOptions {
+        abortOnError false
     }
 }
 
@@ -28,6 +31,5 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife:7.0.1'
     implementation 'com.jakewharton:butterknife:7.0.1' //dependency injection
     implementation 'com.github.uncorkedstudios:shadercam:2.0.1'
-
     implementation 'uk.co.chrisjenx:calligraphy:2.1.0' //textview font injection
 }

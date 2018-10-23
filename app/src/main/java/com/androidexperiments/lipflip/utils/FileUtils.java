@@ -511,10 +511,11 @@ public class FileUtils {
                 + File.separator;
         File directory = new File(path);
         File[] files = directory.listFiles();
-
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].length() == 0) {
-                files[i].delete();
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].length() == 0) {
+                    files[i].delete();
+                }
             }
         }
 

@@ -261,11 +261,6 @@ public class LipSwapActivity extends FragmentActivity
             startRecording();
         }
 
-        // since we're gonna go to the next screen OR wait until recording actually begins,
-        // lets disable button until those things happen to stop spam bug
-        mRecordBtn.setEnabled(false);
-
-        mIsRecording = !mIsRecording;
     }
 
     private void startRecording() {
@@ -273,6 +268,7 @@ public class LipSwapActivity extends FragmentActivity
          * hack for the spamming record button bug where if u tap the button quickly shit goes wrong
          * disable button on click then wait 250ms and re-enable it to stop.
          */
+        mRecordBtn.setEnabled(false);
         mBitmapHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -287,6 +283,13 @@ public class LipSwapActivity extends FragmentActivity
     private void stopRecording() {
         mRecordableSurfaceView.stopRecording();
         mIsRecording = false;
+
+        mBitmapHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                showRecordedFile(mOutputFile.getAbsolutePath());
+            }
+        }, 250);
     }
 
     private void shutdownCamera() {
