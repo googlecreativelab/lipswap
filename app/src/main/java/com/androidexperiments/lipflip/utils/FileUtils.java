@@ -500,6 +500,27 @@ public class FileUtils {
         }
     };
 
+
+    /**
+     * The pattern of setting up RSV to record can orphan file stubs for unused output files,
+     * so we need to check and clean them up from time to time.
+     */
+    public static void cleanUpFileStubs() {
+
+        String path = Environment.getExternalStorageDirectory() + File.separator + "LipService"
+                + File.separator;
+        File directory = new File(path);
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].length() == 0) {
+                    files[i].delete();
+                }
+            }
+        }
+
+    }
+
     /**
      * Get the Intent for selecting content to be used in an Intent Chooser.
      *

@@ -1,5 +1,15 @@
 package com.androidexperiments.lipflip;
 
+import com.androidexperiments.lipflip.adapters.ActualArrayAdapter;
+import com.androidexperiments.lipflip.data.Constants;
+import com.androidexperiments.lipflip.utils.AndroidUtils;
+import com.androidexperiments.lipflip.utils.FileUtils;
+import com.androidexperiments.lipflip.utils.SimpleAnimationListener;
+import com.androidexperiments.lipflip.view.GridViewItem;
+import com.androidexperiments.lipflip.view.IntroView;
+import com.androidexperiments.shadercam.fragments.PermissionsHelper;
+
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaScannerConnection;
@@ -8,6 +18,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -28,13 +39,6 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.androidexperiments.lipflip.adapters.ActualArrayAdapter;
-import com.androidexperiments.lipflip.data.Constants;
-import com.androidexperiments.lipflip.utils.AndroidUtils;
-import com.androidexperiments.lipflip.utils.SimpleAnimationListener;
-import com.androidexperiments.lipflip.view.GridViewItem;
-import com.androidexperiments.lipflip.view.IntroView;
-
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -47,7 +51,10 @@ import butterknife.OnClick;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
-public class ChooserActivity extends AppCompatActivity implements AndroidUtils.OnDeleteFilesCompleteListener {
+public class ChooserActivity extends AppCompatActivity
+        implements AndroidUtils.OnDeleteFilesCompleteListener,
+        PermissionsHelper.PermissionsListener {
+
     private static final String TAG = ChooserActivity.class.getSimpleName();
 
     /**
@@ -62,15 +69,29 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      * a new Lip Flip that will be added to the grid
      */
     public static final String EXTRA_NEW_FILE_PATH_STRING = "extra_new_file_path_string";
+
     public static final String EXTRA_DELETE_FILE = "extra_delete_file";
 
-    @Bind(R.id.intro_view)    IntroView mIntroView;
-    @Bind(R.id.list_chooser)    GridView mGridView;
-    @Bind(R.id.progress_loader)    ProgressBar mProgressLoader;
-    @Bind(R.id.text_get_started)    TextView mGetStartedText;
-    @Bind(R.id.btn_create_new)    ImageButton mBtnCreateNew;
-    @Bind(R.id.photo_chooser_container)    ViewGroup mPhotoChooserContainer;
-    @Bind(R.id.photo_chooser_background)    ViewGroup mPhotoChooserBackground;
+    @Bind(R.id.intro_view)
+    IntroView mIntroView;
+
+    @Bind(R.id.list_chooser)
+    GridView mGridView;
+
+    @Bind(R.id.progress_loader)
+    ProgressBar mProgressLoader;
+
+    @Bind(R.id.text_get_started)
+    TextView mGetStartedText;
+
+    @Bind(R.id.btn_create_new)
+    ImageButton mBtnCreateNew;
+
+    @Bind(R.id.photo_chooser_container)
+    ViewGroup mPhotoChooserContainer;
+
+    @Bind(R.id.photo_chooser_background)
+    ViewGroup mPhotoChooserBackground;
 
     /**
      * base adapter that the animation adapter wraps
@@ -78,13 +99,17 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
     private ChooserAdapter mChooserAdapter;
 
     private Uri outputFileUri;
+
     private Animation mShowFromBottom, mHideFromBottom;
 
     /**
      * Only play intro video when its first time
      */
     private boolean mIsFirstRun;
+
     private String[] mFilesToDelete = null;
+
+    private PermissionsHelper mPermissionsHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,12 +129,13 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
     private void setupGridView() {
         mGridView.setOnItemClickListener(mOnItemClickListener);
         mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
-        mGridView.setMultiChoiceModeListener(new OnMultiChoiceListener(ChooserActivity.this, mGridView));
+        mGridView.setMultiChoiceModeListener(
+                new OnMultiChoiceListener(ChooserActivity.this, mGridView));
     }
 
     private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar!=null) {
+        if (actionBar != null) {
             actionBar.hide();
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setDisplayShowCustomEnabled(true);
@@ -119,8 +145,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
     }
 
     private void setupEdit() {
-        if(!mPhotoChooserContainer.isInEditMode())
-        {
+        if (!mPhotoChooserContainer.isInEditMode()) {
             mPhotoChooserBackground.setVisibility(View.GONE);
             mPhotoChooserContainer.setVisibility(View.GONE);
         }
@@ -133,8 +158,6 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
     /**
      * setup for calligraphy lib
-     *
-     * @param newBase
      */
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -149,7 +172,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
             case R.id.action_about:
                 showAbout();
                 return true;
@@ -164,8 +187,6 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
     /**
      * handle adding a new file to the list when we come back from a gridicon click
      * from the player view post-adding
-     *
-     * @param intent
      */
     @Override
     protected void onNewIntent(Intent intent) {
@@ -203,8 +224,6 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
     /**
      * callback from the {@link .ChooserActivity.GetLipFlipsTask } when it completes
-     *
-     * @param adapter
      */
     private void onGetLipFlipsComplete(ChooserAdapter adapter) {
         mProgressLoader.setVisibility(View.GONE);
@@ -212,7 +231,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
         if (adapter != null) {
             mGetStartedText.setVisibility(View.GONE);
 
-            if(mChooserAdapter != null && (adapter.getCount() == mChooserAdapter.getCount())) {
+            if (mChooserAdapter != null && (adapter.getCount() == mChooserAdapter.getCount())) {
                 //same images (presumably) as last time, so dont update
                 return;
             }
@@ -244,8 +263,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
     /**
      * fade out for intro after video and text finished animating
      */
-    private void startIntro()
-    {
+    private void startIntro() {
         final Handler handler = new Handler();
 
         /**
@@ -259,12 +277,11 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
                     public void run() {
                         Animation alpha = new AlphaAnimation(1.0f, 0.f);
                         alpha.setDuration(750);
-                        alpha.setAnimationListener(new SimpleAnimationListener(){
+                        alpha.setAnimationListener(new SimpleAnimationListener() {
                             @Override
-                            public void onAnimationEnd(Animation animation)
-                            {
+                            public void onAnimationEnd(Animation animation) {
                                 //remove shit we dont need
-                                ((ViewGroup)mIntroView.getParent()).removeView(mIntroView);
+                                ((ViewGroup) mIntroView.getParent()).removeView(mIntroView);
 
                                 //animate button in
                                 mBtnCreateNew.setVisibility(View.VISIBLE);
@@ -301,6 +318,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      * handle everything in an AsycTask because file i/o sometimes takes a while, don't want to lock UI
      */
     private void setupList() {
+        mGetStartedText.setVisibility(View.VISIBLE);
         mProgressLoader.setVisibility(View.VISIBLE);
         new GetLipFlipsTask(this).execute();
     }
@@ -309,11 +327,15 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
     protected void onResume() {
         super.onResume();
 
-        if(mIsFirstRun) {
-            startIntro();
-            mIsFirstRun = false;
-        }
-        else {
+        if (mIsFirstRun) {
+
+            if (PermissionsHelper.isMorHigher()) {
+                setupPermissions();
+            } else {
+                startIntro();
+                mIsFirstRun = false;
+            }
+        } else {
             //every time we come back from anywhere, check to see if anything is gone/added
             //issue 52 from not following original ux flow, poor design
             new GetLipFlipsTask(this).execute();
@@ -329,7 +351,6 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
         mPhotoChooserContainer.setVisibility(View.VISIBLE);
         mBtnCreateNew.startAnimation(mHideFromBottom);
         mBtnCreateNew.setVisibility(View.GONE);
-
 
         AlphaAnimation alphaIn = new AlphaAnimation(0.f, 1.f);
         alphaIn.setDuration(mShowFromBottom.getDuration());
@@ -353,12 +374,33 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
     @OnClick(R.id.btn_use_camera)
     public void onClickUseCameraBtn() {
+
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getImageUri());
             startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        FileUtils.cleanUpFileStubs();
+
+    }
+
+    private void setupPermissions() {
+        mPermissionsHelper = PermissionsHelper.attach(this);
+        mPermissionsHelper.setRequestedPermissions(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+
+        );
+        mPermissionsHelper.checkAppCompatPermissions(this);
+    }
+
 
     @OnClick(R.id.btn_use_docs)
     public void onClickUseDocs() {
@@ -372,15 +414,11 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
     /**
      * handle our choosing of a photo above, pushing the image into our {@link .LipServiceActivity}
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            if(requestCode == REQUEST_IMAGE_CAPTURE || requestCode == REQUEST_CODE_SELECT_PIC) {
+            if (requestCode == REQUEST_IMAGE_CAPTURE || requestCode == REQUEST_CODE_SELECT_PIC) {
                 Log.d(TAG, "image success! " + outputFileUri);
 
                 final boolean isCamera;
@@ -406,8 +444,9 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
                 //weird bug if its still null with no info
                 //TODO - why does our resultCode == SUCCESS but intent data is null only on some phones?
-                if (selectedImageUri == null && outputFileUri != null)
+                if (selectedImageUri == null && outputFileUri != null) {
                     selectedImageUri = outputFileUri;
+                }
 
                 //todo dont animate this
                 onBackgroundClick();
@@ -419,22 +458,21 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
         }
     }
 
-    private Uri getImageUri()
-    {
+    private Uri getImageUri() {
         final File root = Constants.getStorageDir(this);
         root.mkdirs();
         final String fname = "lip_img_" + System.currentTimeMillis() + ".jpg";
         final File sdImageMainDirectory = new File(root, fname);
-        outputFileUri = Uri.fromFile(sdImageMainDirectory);
+        outputFileUri = FileProvider
+                .getUriForFile(this,
+                        this.getApplicationContext().getPackageName() + ".utils.provider",
+                        sdImageMainDirectory);
 
         return outputFileUri;
     }
 
     /**
      * delete all items with corresponding ids, in separate task, finishing mode after if necessary
-     *
-     * @param checkedItemIds
-     * @param mode
      */
     private void deleteItems(long[] checkedItemIds, ActionMode mode) {
         ArrayList<File> itemsToRemove = new ArrayList<>();
@@ -442,20 +480,20 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
             itemsToRemove.add(mChooserAdapter.getItem((int) id));
         }
 
-        AndroidUtils.FileDeleteTask deleteTask = new AndroidUtils.FileDeleteTask(this, itemsToRemove);
+        AndroidUtils.FileDeleteTask deleteTask = new AndroidUtils.FileDeleteTask(this,
+                itemsToRemove);
         deleteTask.execute();
     }
 
     /**
      * when our task is done deleting stuffs, cleanup whatever we need to.
      * called from {@link AndroidUtils.FileDeleteTask}
-     *
-     * @param filesToDelete
      */
     @Override
     public void onDeleteFilesComplete(String[] filesToDelete) {
-        if(filesToDelete.length == 0 || mChooserAdapter == null)
+        if (filesToDelete.length == 0 || mChooserAdapter == null) {
             return;
+        }
 
         //remove from adapter - have to create array from array, yay
         ArrayList<File> files = new ArrayList<>();
@@ -473,10 +511,11 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      * if post-updated list is empty, mShowFromBottom our entry screen again!
      */
     private void checkItems() {
-        if (mChooserAdapter.getCount() == 0)
+        if (mChooserAdapter.getCount() == 0) {
             mGetStartedText.setVisibility(View.VISIBLE);
-        else
+        } else {
             mGetStartedText.setVisibility(View.GONE);
+        }
     }
 
     private void showAbout() {
@@ -503,22 +542,36 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      * handles the single click of a list item, pushing file into PlayerActivity and letting
      * it know that we don't need the Grid icon to be available (back works fine)
      */
-    private AdapterView.OnItemClickListener mOnItemClickListener = new AdapterView.OnItemClickListener() {
+    private AdapterView.OnItemClickListener mOnItemClickListener
+            = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Log.d(TAG, "item: " + parent.getAdapter().getItem(position));
 
             Intent intent = new Intent(ChooserActivity.this, PlayerActivity.class);
             intent.putExtra(PlayerActivity.EXTRA_USE_GRID, false);
-            intent.putExtra(PlayerActivity.EXTRA_FILE_PATH, (parent.getAdapter().getItem(position)).toString());
+            intent.putExtra(PlayerActivity.EXTRA_FILE_PATH,
+                    (parent.getAdapter().getItem(position)).toString());
             startActivity(intent);
         }
     };
+
+    @Override
+    public void onPermissionsSatisfied() {
+        startIntro();
+        mIsFirstRun = false;
+    }
+
+    @Override
+    public void onPermissionsFailed(String[] strings) {
+        finish();
+    }
 
     /**
      * gridview listener for multiple choice listeners, static with weak activity ref for callbacks
      */
     private static class OnMultiChoiceListener implements AbsListView.MultiChoiceModeListener {
+
         private final GridView mGridView;
 
         private final WeakReference<ChooserActivity> mWeakActivity;
@@ -531,23 +584,28 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
         }
 
         @Override
-        public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        public void onItemCheckedStateChanged(ActionMode mode, int position, long id,
+                boolean checked) {
             //highlight stuff if it should be checked
-            GridViewItem item = (GridViewItem) mGridView.getChildAt(position - mGridView.getFirstVisiblePosition());
+            GridViewItem item = (GridViewItem) mGridView
+                    .getChildAt(position - mGridView.getFirstVisiblePosition());
             item.animateHighlight(checked);
 
-            Log.d(TAG, "onItemCheckedStateChanged() " + position + " id: " + id + " checked: " + checked);
+            Log.d(TAG, "onItemCheckedStateChanged() " + position + " id: " + id + " checked: "
+                    + checked);
 
-            if (checked)
+            if (checked) {
                 mSelectedItems.add(item);
-            else
+            } else {
                 mSelectedItems.remove(item);
+            }
 
             if (mSelectedItems.size() > 1) {
                 //more than one selected, so disable sharing
                 mode.getMenu().findItem(R.id.action_share).setEnabled(false);
-            } else if (mSelectedItems.size() == 1)
+            } else if (mSelectedItems.size() == 1) {
                 mode.getMenu().findItem(R.id.action_share).setEnabled(true);
+            }
         }
 
         @Override
@@ -571,7 +629,8 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
                 case R.id.action_share:
                     Intent shareIntent = AndroidUtils.getShareIntent(
                             adapter.getItem(
-                                    (int) mGridView.getCheckedItemIds()[0] //first object since we can only have one selected at a time
+                                    (int) mGridView.getCheckedItemIds()[0]
+                                    //first object since we can only have one selected at a time
                             ),
                             null //insert "Made by Lip Flip?"
                     );
@@ -609,6 +668,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      * task to get all the files in the LipFlip dir and create adapter
      */
     public static class GetLipFlipsTask extends AsyncTask<Void, Void, ChooserAdapter> {
+
         private final WeakReference<ChooserActivity> weakActivity;
 
         public GetLipFlipsTask(ChooserActivity activity) {
@@ -621,8 +681,9 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
             ChooserAdapter adapter = null;
 
-            if (files != null && files.size() > 0)
+            if (files != null && files.size() > 0) {
                 adapter = new ChooserAdapter(weakActivity.get(), files);
+            }
 
             return adapter;
         }
@@ -637,6 +698,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
      * custom adapter for our grid view
      */
     private static class ChooserAdapter extends ActualArrayAdapter<File> {
+
         private final Context mContext;
 
         ChooserAdapter(Context ctx, List<File> items) {
@@ -655,7 +717,8 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
 
             if (item == null) {
                 //cheating
-                item = (GridViewItem) LayoutInflater.from(mContext).inflate(R.layout.view_grid_item, parent, false);
+                item = (GridViewItem) LayoutInflater.from(mContext)
+                        .inflate(R.layout.view_grid_item, parent, false);
 
                 ItemHolder holder = new ItemHolder(getItem(position));
                 item.setTag(holder);
@@ -677,6 +740,7 @@ public class ChooserActivity extends AppCompatActivity implements AndroidUtils.O
         }
 
         private class ItemHolder {
+
             File file;
 
             public ItemHolder(File file) {

@@ -1,13 +1,12 @@
 package com.androidexperiments.lipflip.gl;
 
+import com.androidexperiments.shadercam.gl.VideoRenderer;
+
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.os.Handler;
-
-import com.androidexperiments.shadercam.fragments.CameraFragment;
-import com.androidexperiments.shadercam.gl.CameraRenderer;
+import android.util.Log;
 
 
 /**
@@ -18,44 +17,54 @@ import com.androidexperiments.shadercam.gl.CameraRenderer;
  * any app capable of sharing images via intent. second texture
  * is used as a mask, which is drawn by your finger
  */
-public class LipFlipRenderer extends CameraRenderer
-{
+public class LipFlipRenderer extends VideoRenderer {
+
     private static final String TAG = LipFlipRenderer.class.getSimpleName();
 
     private static final String UNIFORM_PAINT_TEX = "paintTexture";
+
     public static final int MSG_UPDATE_COMPLETE = 10;
 
     private int mPaintTexId = -1;
+
     private Bitmap mNextCache;
+
     private boolean mUpdateIsNeeded = false;
+
     private Handler mBitmapHandler;
+
     private Bitmap mInitialBitmap;
 
     private float mGamma = 1.0f;
+
     private float mHue = 0.f;
+
     private float mImageAspectRatio = 1.f;
 
-    public LipFlipRenderer(Context context, SurfaceTexture texture, CameraFragment cameraFragment, int width, int height)
-    {
+    protected float mSurfaceAspectRatio;
+
+    public LipFlipRenderer(Context context, int width, int height) {
         //use new vert and frag shaders
-        super(context, texture, cameraFragment, width, height, "lip_service.frag", "lip_service.vert");
+        super(context, "lip_service.frag", "lip_service.vert");
+        mSurfaceAspectRatio = ((1.0f * width) / (1.0f * height));
+        mSurfaceHeight = height;
+        mSurfaceWidth = width;
     }
 
     @Override
-    protected void onSetupComplete()
-    {
+    protected void onSetupComplete() {
         //add the image that was chosen by the user - match with sampler2D in frag shader
         addTexture(mInitialBitmap, "faceTexture");
 
-        if(mPaintTexId == -1)
+        if (mPaintTexId == -1) {
             mPaintTexId = addTexture(mNextCache, UNIFORM_PAINT_TEX);
+        }
 
         super.onSetupComplete();
     }
 
     @Override
-    protected void deinitGLComponents()
-    {
+    protected void deinitGLComponents() {
         mPaintTexId = -1;
 
         super.deinitGLComponents();
@@ -63,30 +72,31 @@ public class LipFlipRenderer extends CameraRenderer
 
     /**
      * used only on first run
-     * @param bitmap
      */
     public void setPaintTexture(Bitmap bitmap) {
         mNextCache = bitmap;
     }
 
-    public void updatePaintTexture(Bitmap drawingCache)
-    {
+    public void updatePaintTexture(Bitmap drawingCache) {
         mNextCache = drawingCache;
         mUpdateIsNeeded = true;
     }
 
     @Override
-    protected void setExtraTextures()
-    {
-        if(mUpdateIsNeeded)
-        {
+    public void onDrawFrame() {
+
+        super.onDrawFrame();
+    }
+
+    @Override
+    protected void setExtraTextures() {
+        if (mUpdateIsNeeded) {
             try {
                 updateTexture(mPaintTexId, mNextCache);
                 mBitmapHandler.sendEmptyMessage(MSG_UPDATE_COMPLETE);
-            }
-            catch(IllegalArgumentException e)
-            {
+            } catch (IllegalArgumentException e) {
                 //first run and awful way to hope this fails
+                Log.e(TAG, "ILLEGAL", e);
             }
 
             mUpdateIsNeeded = false;
@@ -95,11 +105,11 @@ public class LipFlipRenderer extends CameraRenderer
     }
 
     @Override
-    protected void setUniformsAndAttribs()
-    {
+    protected void setUniformsAndAttribs() {
         super.setUniformsAndAttribs();
 
-        int imgAspectRatioHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "imgAspectRatio");
+        int imgAspectRatioHandle = GLES20
+                .glGetUniformLocation(mCameraShaderProgram, "imgAspectRatio");
         GLES20.glUniform1f(imgAspectRatioHandle, mImageAspectRatio);
 
         int gammaHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "gamma");
@@ -111,53 +121,46 @@ public class LipFlipRenderer extends CameraRenderer
 
     /**
      * update the image alpha uniform from edit slider
-     * @param gamma
      */
-    public void setGamma(float gamma)
-    {
+    public void setGamma(float gamma) {
         mGamma = gamma;
     }
 
     /**
      * update the color tone from edit slider
      */
-    public void setHue(float hue)
-    {
+    public void setHue(float hue) {
         mHue = hue;
     }
 
     /**
      * set the handler responsible for passing back update complete message
-     * @param bitmapHandler
      */
     public void setBitmapHandler(Handler bitmapHandler) {
         mBitmapHandler = bitmapHandler;
     }
 
-    public void setInitialBitmap(Bitmap initialBitmap)
-    {
-        if(initialBitmap == null)
+    public void setInitialBitmap(Bitmap initialBitmap) {
+        if (initialBitmap == null) {
             throw new IllegalArgumentException("initialBitmap cannot be null!");
+        }
 
         mInitialBitmap = initialBitmap;
 
         int imgWidth = initialBitmap.getWidth();
         int imgHeight = initialBitmap.getHeight();
 
-        mImageAspectRatio = (float)imgWidth / imgHeight;
+        mImageAspectRatio = (float) imgWidth / imgHeight;
 
         //todo - rename to what this really is?
 
-        if(mImageAspectRatio == mSurfaceAspectRatio)
+        if (mImageAspectRatio == mSurfaceAspectRatio) {
             mImageAspectRatio = 1.f;
-        else if(mImageAspectRatio > mSurfaceAspectRatio)
-        {
-            float nw = ((float)mSurfaceHeight / imgHeight) * imgWidth;
+        } else if (mImageAspectRatio > mSurfaceAspectRatio) {
+            float nw = ((float) mSurfaceHeight / imgHeight) * imgWidth;
             mImageAspectRatio = mSurfaceWidth / nw;
-        }
-        else
-        {
-            float nh = ((float)mSurfaceWidth / imgWidth) * imgHeight;
+        } else {
+            float nh = ((float) mSurfaceWidth / imgWidth) * imgHeight;
             mImageAspectRatio = mSurfaceHeight / nh;
         }
     }

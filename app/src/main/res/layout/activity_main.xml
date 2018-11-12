@@ -5,8 +5,8 @@
     android:id="@+id/main_container"
     tools:context=".MainActivity">
 
-    <TextureView
-        android:id="@+id/texture"
+    <com.uncorkedstudios.android.view.recordablesurfaceview.RecordableSurfaceView
+        android:id="@+id/recordable_surface_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

@@ -1,15 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         applicationId "com.androidexperiments.lipflip"
-        minSdkVersion 21
-        targetSdkVersion 22
-        versionCode 21
-        versionName "1.0.2"
+        minSdkVersion 24
+        targetSdkVersion 28
+        versionCode 3
+        versionName '2.0.0'
     }
     buildTypes {
         release {
@@ -17,16 +18,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    //android
-    compile 'com.android.support:appcompat-v7:22.2.1'
-
-    //useful
-    compile 'com.androidexperiments:shadercam:1.0.2' //shader manipulation of camera
-    compile 'com.jakewharton:butterknife:7.0.1' //dependency injection
-    compile 'uk.co.chrisjenx:calligraphy:2.1.0' //textview font injection
+    implementation 'com.android.support:support-fragment:28.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0' //for theming
+    annotationProcessor 'com.jakewharton:butterknife:7.0.1'
+    implementation 'com.jakewharton:butterknife:7.0.1' //dependency injection
+    implementation 'com.github.uncorkedstudios:shadercam:2.0.1'
+    implementation 'uk.co.chrisjenx:calligraphy:2.1.0' //textview font injection
 }
