@@ -627,7 +627,7 @@ public class ChooserActivity extends AppCompatActivity
 
             switch (item.getItemId()) {
                 case R.id.action_share:
-                    Intent shareIntent = AndroidUtils.getShareIntent(
+                    Intent shareIntent = AndroidUtils.getShareIntent(item.getActionView().getContext(),
                             adapter.getItem(
                                     (int) mGridView.getCheckedItemIds()[0]
                                     //first object since we can only have one selected at a time

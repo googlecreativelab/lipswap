@@ -225,7 +225,7 @@ public class PlayerActivity extends FragmentActivity implements AndroidUtils.OnD
     @OnClick(R.id.menu_share)
     public void onClickShare()
     {
-        Intent shareIntent = AndroidUtils.getShareIntent(mFileToPlay, null);
+        Intent shareIntent = AndroidUtils.getShareIntent(this, mFileToPlay, null);
         startActivity(shareIntent);
     }
 
