@@ -138,18 +138,6 @@ public class LipSwapActivity extends FragmentActivity
         getImage(getIntent());
     }
 
-
-    private void setupPermissions() {
-//        mPermissionsHelper = PermissionsHelper.attach(this);
-//        mPermissionsHelper.setRequestedPermissions(
-//                Manifest.permission.CAMERA,
-//                Manifest.permission.RECORD_AUDIO,
-//                Manifest.permission.WRITE_EXTERNAL_STORAGE
-//
-//        );
-    }
-
-
     private void checkFirstTime() {
         //get shared
         SharedPreferences prefs = getPreferences(MODE_PRIVATE);

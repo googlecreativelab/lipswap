@@ -156,6 +156,22 @@ public class ChooserActivity extends AppCompatActivity
         mHideFromBottom = AnimationUtils.loadAnimation(this, R.anim.hide_to_bottom);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (outputFileUri != null) {
+            outState.putString("cameraImageUri", outputFileUri.toString());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey("cameraImageUri")) {
+            outputFileUri = Uri.parse(savedInstanceState.getString("cameraImageUri"));
+        }
+    }
+
     /**
      * setup for calligraphy lib
      */
