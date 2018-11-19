@@ -1,5 +1,8 @@
 package com.androidexperiments.lipflip.utils;
 
+import com.androidexperiments.lipflip.BuildConfig;
+import com.androidexperiments.lipflip.R;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -11,12 +14,11 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
-
-import com.androidexperiments.lipflip.R;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,28 +30,28 @@ import java.util.ArrayList;
 /**
  * General i/o helpers and such
  */
-public class AndroidUtils
-{
+public class AndroidUtils {
+
     /**
      * Helper for getting strings from any file type in /assets/ folder. Primarily used for shaders.
      *
-     * @param ctx Context to use
+     * @param ctx      Context to use
      * @param filename name of the file, including any folders, inside of the /assets/ folder.
      * @return String of contents of file, lines separated by <code>\n</code>
      * @throws java.io.IOException if file is not found
      */
-    public static String getStringFromFileInAssets(Context ctx, String filename) throws IOException {
+    public static String getStringFromFileInAssets(Context ctx, String filename)
+            throws IOException {
         return getStringFromFileInAssets(ctx, filename, true);
     }
 
-    public static String getStringFromFileInAssets(Context ctx, String filename, boolean useNewline) throws IOException
-    {
+    public static String getStringFromFileInAssets(Context ctx, String filename, boolean useNewline)
+            throws IOException {
         InputStream is = ctx.getAssets().open(filename);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder builder = new StringBuilder();
         String line;
-        while((line = reader.readLine()) != null)
-        {
+        while ((line = reader.readLine()) != null) {
             builder.append(line + (useNewline ? "\n" : ""));
         }
         is.close();
@@ -58,19 +60,16 @@ public class AndroidUtils
 
     /**
      * get a dialog to show while we create/add/delete all kinds of stuff
-     * @param ctx
-     * @param textId
-     * @return
      */
-    public static Dialog getAlertDialog(Context ctx, int textId)
-    {
+    public static Dialog getAlertDialog(Context ctx, int textId) {
         View alertView = LayoutInflater.from(ctx).inflate(R.layout.alert_dialog, null, false);
-        TextView text = (TextView)alertView.findViewById(R.id.alert_text);
+        TextView text = (TextView) alertView.findViewById(R.id.alert_text);
         text.setText(textId);
 
         Dialog diag = new Dialog(ctx);
         diag.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        diag.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        diag.getWindow()
+                .setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         diag.setContentView(alertView);
         diag.setCancelable(false);
 
@@ -79,40 +78,40 @@ public class AndroidUtils
 
     /**
      * set our screen to IMMMERRRRSSIIVEEEEE MODDDDEEEEEEE
-     * @param activity
      */
-    public static void goFullscreen(Activity activity)
-    {
+    public static void goFullscreen(Activity activity) {
         activity.getWindow()
                 .getDecorView()
                 .setSystemUiVisibility(
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        );
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                );
     }
 
     /**
      * get Intent for sharing our awesome lip video
-     * @param file file to share
+     *
+     * @param file    file to share
      * @param caption optional caption
-     * @return
      */
-    public static Intent getShareIntent(File file, @Nullable String caption)
-    {
+    public static Intent getShareIntent(Context c, File file, @Nullable String caption) {
         Intent share = new Intent(Intent.ACTION_SEND);
         share.setType("video/*");
 
         //add the file uri
-        Uri uri = Uri.fromFile(file);
+//        Uri uri = Uri.fromFile(file);
+        Uri uri = FileProvider
+                .getUriForFile(c, BuildConfig.APPLICATION_ID + ".utils.provider", file);
         share.putExtra(Intent.EXTRA_STREAM, uri);
 
         //add caption if present
-        if(caption != null)
+        if (caption != null) {
             share.putExtra(Intent.EXTRA_TEXT, caption);
+        }
 
         return share;
     }
@@ -121,34 +120,38 @@ public class AndroidUtils
      * Task to delete a lot of files - hopefully this isn't even that necessary since it happens
      * so fast, but using it anyway since media scanner might take a while
      */
-    public static class FileDeleteTask extends AsyncTask<Void, Void, String[]>
-    {
+    public static class FileDeleteTask extends AsyncTask<Void, Void, String[]> {
+
         private final Activity activity;
+
         private final OnDeleteFilesCompleteListener completeListener;
+
         private final ArrayList<File> itemsToRemove;
+
         private final Dialog dialog;
 
         /**
          * A task that can delete a bunch of files, and needs an
          * activity that implements {@link .AndroidUtils.OnDeleteFilesCompleteListener}
-         * @param activityListener
-         * @param itemsToRemove
          */
-        public FileDeleteTask(OnDeleteFilesCompleteListener activityListener, ArrayList<File> itemsToRemove)
-        {
-            if(!(activityListener instanceof Activity))
-                throw new IllegalArgumentException("OnDeleteFilesCompleteListener cannot be anon - it must be attached to an Activity!");
+        public FileDeleteTask(OnDeleteFilesCompleteListener activityListener,
+                ArrayList<File> itemsToRemove) {
+            if (!(activityListener instanceof Activity)) {
+                throw new IllegalArgumentException(
+                        "OnDeleteFilesCompleteListener cannot be anon - it must be attached to an Activity!");
+            }
 
-            this.activity = (Activity)activityListener;
+            this.activity = (Activity) activityListener;
             this.completeListener = activityListener;
             this.itemsToRemove = itemsToRemove;
 
             //setup dialog
             int textId;
-            if(itemsToRemove.size() > 1)
+            if (itemsToRemove.size() > 1) {
                 textId = R.string.dialog_deleting_files;
-            else
+            } else {
                 textId = R.string.dialog_deleting_file;
+            }
 
             this.dialog = AndroidUtils.getAlertDialog(this.activity, textId);
         }
@@ -159,25 +162,23 @@ public class AndroidUtils
         }
 
         @Override
-        protected String[] doInBackground(Void... params)
-        {
+        protected String[] doInBackground(Void... params) {
             String[] filesToDelete = new String[itemsToRemove.size()];
 
-            for(int i = 0; i < itemsToRemove.size(); i++)
-            {
+            for (int i = 0; i < itemsToRemove.size(); i++) {
                 File file = itemsToRemove.get(i);
                 boolean deleted = file.delete();
 
-                if(deleted)
+                if (deleted) {
                     filesToDelete[i] = file.toString();
+                }
             }
 
             return filesToDelete;
         }
 
         @Override
-        protected void onPostExecute(String[] files)
-        {
+        protected void onPostExecute(String[] files) {
             this.completeListener.onDeleteFilesComplete(files);
             this.dialog.dismiss();
         }
@@ -222,11 +223,12 @@ public class AndroidUtils
                 return bitmap;
         }
         try {
-            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            Bitmap bmRotated = Bitmap
+                    .createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,
+                            true);
             bitmap.recycle();
             return bmRotated;
-        }
-        catch (OutOfMemoryError e) {
+        } catch (OutOfMemoryError e) {
             e.printStackTrace();
             return null;
         }
@@ -237,6 +239,7 @@ public class AndroidUtils
      * It MUST be implemented by an activity since it serves a dual purpose mainly because lazy.
      */
     public interface OnDeleteFilesCompleteListener {
+
         void onDeleteFilesComplete(String[] filesToDelete);
     }
 

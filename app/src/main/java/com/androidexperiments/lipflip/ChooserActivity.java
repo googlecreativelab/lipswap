@@ -156,6 +156,22 @@ public class ChooserActivity extends AppCompatActivity
         mHideFromBottom = AnimationUtils.loadAnimation(this, R.anim.hide_to_bottom);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (outputFileUri != null) {
+            outState.putString("cameraImageUri", outputFileUri.toString());
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey("cameraImageUri")) {
+            outputFileUri = Uri.parse(savedInstanceState.getString("cameraImageUri"));
+        }
+    }
+
     /**
      * setup for calligraphy lib
      */
@@ -627,7 +643,7 @@ public class ChooserActivity extends AppCompatActivity
 
             switch (item.getItemId()) {
                 case R.id.action_share:
-                    Intent shareIntent = AndroidUtils.getShareIntent(
+                    Intent shareIntent = AndroidUtils.getShareIntent(item.getActionView().getContext(),
                             adapter.getItem(
                                     (int) mGridView.getCheckedItemIds()[0]
                                     //first object since we can only have one selected at a time

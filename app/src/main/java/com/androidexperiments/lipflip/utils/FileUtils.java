@@ -507,7 +507,7 @@ public class FileUtils {
      */
     public static void cleanUpFileStubs() {
 
-        String path = Environment.getExternalStorageDirectory() + File.separator + "LipService"
+        String path = Environment.getExternalStorageDirectory() + File.separator + "LipSwap"
                 + File.separator;
         File directory = new File(path);
         File[] files = directory.listFiles();

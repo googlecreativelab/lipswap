@@ -7,7 +7,11 @@
         <item name="android:actionModeStyle">@style/AppActionMode</item>
         <item name="android:colorPrimary">#000000</item>
         <item name="colorPrimary">#000000</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">
+            shortEdges
+        </item>
     </style>
+
     <style name="ActionBarStyle" parent="Widget.AppCompat.ActionBar">
 
     </style>

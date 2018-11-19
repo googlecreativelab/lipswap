@@ -27,7 +27,7 @@ public class Constants
     public static File getStorageDir(Context ctx)
     {
         if(mStorageDir == null) {
-            mStorageDir = new File(Environment.getExternalStorageDirectory() + File.separator + "LipService" + File.separator);// ctx.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+            mStorageDir = new File(Environment.getExternalStorageDirectory() + File.separator + "LipSwap" + File.separator);// ctx.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         }
 
         return mStorageDir;
