@@ -4,6 +4,10 @@ import com.androidexperiments.shadercam.gl.VideoRenderer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.RectF;
+import android.media.ThumbnailUtils;
 import android.opengl.GLES20;
 import android.os.Handler;
 import android.util.Log;
@@ -145,10 +149,12 @@ public class LipFlipRenderer extends VideoRenderer {
             throw new IllegalArgumentException("initialBitmap cannot be null!");
         }
 
-        mInitialBitmap = initialBitmap;
+        Bitmap tempBitmap = ThumbnailUtils.extractThumbnail(initialBitmap, mSurfaceWidth, mSurfaceHeight);
 
-        int imgWidth = initialBitmap.getWidth();
-        int imgHeight = initialBitmap.getHeight();
+        mInitialBitmap = tempBitmap;
+
+        int imgWidth = mInitialBitmap.getWidth();
+        int imgHeight = mInitialBitmap.getHeight();
 
         mImageAspectRatio = (float) imgWidth / imgHeight;
 
