@@ -447,6 +447,8 @@ public class LipSwapActivity extends FragmentActivity
 
     }
 
+
+
     private File getFile(String prefix) {
         return new File(Constants.getStorageDir(this), prefix + System.nanoTime() + ".mp4");
     }

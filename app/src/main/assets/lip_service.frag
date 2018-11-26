@@ -7,6 +7,7 @@ uniform float aspectRatio;
 
 varying vec2 v_CamTexCoordinate;
 varying vec2 v_TexCoordinate;
+varying vec2 v_FaceCoordinate;
 
 //THIS NEEDS TO MATCH STRING IN LipServiceRenderer
 uniform sampler2D faceTexture;
@@ -30,11 +31,7 @@ void main ()
     float halfAspectOffset = (1. - imgAspectRatio) / 2.;
     vec4 face;
 
-    //if(imgAspectRatio < 1.)
-        face = texture2D(faceTexture, (v_TexCoordinate + vec2(halfAspectOffset, 0.)) * vec2(imgAspectRatio, 1.));
-    //else
-      //  face = texture2D(faceTexture, (v_TexCoordinate + vec2(halfAspectOffset, 0.)));
-
+    face = texture2D(faceTexture, v_FaceCoordinate);
     vec4 paint = texture2D(paintTexture, v_TexCoordinate);
 
     /* hue adjustment */
