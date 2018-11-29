@@ -18,12 +18,12 @@ uniform mat4 uPMatrix;
 void main() {
     //camera texcoord needs to be manipulated by the transform given back
     //from the system
-    v_CamTexCoordinate = (camTextureTransform * camTexCoordinate).xy;
+    v_CamTexCoordinate = (camTextureTransform * camTexCoordinate * uPMatrix).xy;
 
     //normal coordinate is upside down so reverse it
     v_TexCoordinate = camTexCoordinate.xy * vec2(1.0, -1.0);
 
-    v_FaceCoordinate = (FMatrix * camTexCoordinate).xy * vec2(1.0, -1.0);
+    v_FaceCoordinate = (camTexCoordinate).xy * vec2(1.0, -1.0);
 
     gl_Position =  FMatrix * position;
 }
