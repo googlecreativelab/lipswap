@@ -6,12 +6,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.os.Handler;
 import android.util.Log;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 
 
 /**
@@ -97,9 +94,8 @@ public class LipFlipRenderer extends VideoRenderer {
     @Override
     public void onDrawFrame() {
 
-        android.opengl.Matrix
-                .orthoM(mFaceOrtho, 0, -mFaceScreenAspect, mFaceScreenAspect,  -mFaceScreenAspect,  mFaceScreenAspect ,-1, 1);
-
+        Matrix.setIdentityM(mFaceOrtho, 0);
+        Matrix.orthoM(mFaceOrtho, 0, -1, 1, 1 / -mFaceScreenAspect, 1 / mFaceScreenAspect, -1, 1);
         super.onDrawFrame();
     }
 
@@ -168,7 +164,8 @@ public class LipFlipRenderer extends VideoRenderer {
 
         float surfaceAspect = mSurfaceWidth / (1.0f * mSurfaceHeight);
 
-        Bitmap tempBitmap = ThumbnailUtils.extractThumbnail(initialBitmap, mSurfaceWidth, mSurfaceHeight);
+        Bitmap tempBitmap = ThumbnailUtils
+                .extractThumbnail(initialBitmap, mSurfaceWidth, mSurfaceHeight);
 
         mInitialBitmap = tempBitmap;
 
@@ -177,7 +174,7 @@ public class LipFlipRenderer extends VideoRenderer {
 
         mImageAspectRatio = imgWidth / (1.0f * imgHeight);
 
-        mFaceScreenAspect = surfaceAspect/ mImageAspectRatio;
+        mFaceScreenAspect = surfaceAspect / mImageAspectRatio;
 
     }
 
