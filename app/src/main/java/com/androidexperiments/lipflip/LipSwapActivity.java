@@ -427,7 +427,9 @@ public class LipSwapActivity extends FragmentActivity
         mRenderer.setBitmapHandler(mBitmapHandler);
         mRenderer.setInitialBitmap(mInitialBitmap);
 
-        mRenderer.setPaintTexture(mPaintView.getDrawingCopy(size.x, size.y));
+        Bitmap theMap = mPaintView.getDrawingCopy(size.x, size.y);
+
+        mRenderer.setPaintTexture(theMap);
         setupCameraFragment(mRenderer);
 
         //now that renderer is created and ready, await new bitmaps
