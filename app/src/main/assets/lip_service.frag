@@ -29,9 +29,8 @@ void main ()
     vec4 cameraColor = texture2D(camTexture, v_CamTexCoordinate);// * vec2(aspectRatio, 1.0));
 
     float halfAspectOffset = (1. - imgAspectRatio) / 2.;
-    vec4 face;
 
-    face = texture2D(faceTexture, v_FaceCoordinate);
+    vec4 face = texture2D(faceTexture, v_FaceCoordinate);
     vec4 paint = texture2D(paintTexture, v_TexCoordinate);
 
     /* hue adjustment */

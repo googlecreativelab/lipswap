@@ -4,13 +4,14 @@ import com.androidexperiments.shadercam.gl.VideoRenderer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.RectF;
 import android.media.ThumbnailUtils;
 import android.opengl.GLES20;
 import android.os.Handler;
 import android.util.Log;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
 
 /**
@@ -47,6 +48,12 @@ public class LipFlipRenderer extends VideoRenderer {
 
     protected float mSurfaceAspectRatio;
 
+    private float[] mFaceOrtho = new float[16];
+
+    private float mFaceScreenAspect = 1.0f;
+
+    private int mScreenFaceHandle;
+
     public LipFlipRenderer(Context context, int width, int height) {
         //use new vert and frag shaders
         super(context, "lip_service.frag", "lip_service.vert");
@@ -58,8 +65,9 @@ public class LipFlipRenderer extends VideoRenderer {
     @Override
     protected void onSetupComplete() {
         //add the image that was chosen by the user - match with sampler2D in frag shader
-        addTexture(mInitialBitmap, "faceTexture");
-
+        if (mInitialBitmap != null) {
+            addTexture(mInitialBitmap, "faceTexture");
+        }
         if (mPaintTexId == -1) {
             mPaintTexId = addTexture(mNextCache, UNIFORM_PAINT_TEX);
         }
@@ -88,6 +96,9 @@ public class LipFlipRenderer extends VideoRenderer {
 
     @Override
     public void onDrawFrame() {
+
+        android.opengl.Matrix
+                .orthoM(mFaceOrtho, 0, -mFaceScreenAspect, mFaceScreenAspect,  -mFaceScreenAspect,  mFaceScreenAspect ,-1, 1);
 
         super.onDrawFrame();
     }
@@ -121,6 +132,12 @@ public class LipFlipRenderer extends VideoRenderer {
 
         int hueHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "hue");
         GLES20.glUniform1f(hueHandle, mHue);
+
+        mScreenFaceHandle = GLES20.glGetUniformLocation(mCameraShaderProgram, "FMatrix");
+
+        GLES20.glUniformMatrix4fv(mScreenFaceHandle, 1, false, mFaceOrtho, 0);
+
+
     }
 
     /**
@@ -149,6 +166,8 @@ public class LipFlipRenderer extends VideoRenderer {
             throw new IllegalArgumentException("initialBitmap cannot be null!");
         }
 
+        float surfaceAspect = mSurfaceWidth / (1.0f * mSurfaceHeight);
+
         Bitmap tempBitmap = ThumbnailUtils.extractThumbnail(initialBitmap, mSurfaceWidth, mSurfaceHeight);
 
         mInitialBitmap = tempBitmap;
@@ -156,19 +175,10 @@ public class LipFlipRenderer extends VideoRenderer {
         int imgWidth = mInitialBitmap.getWidth();
         int imgHeight = mInitialBitmap.getHeight();
 
-        mImageAspectRatio = (float) imgWidth / imgHeight;
+        mImageAspectRatio = imgWidth / (1.0f * imgHeight);
 
-        //todo - rename to what this really is?
+        mFaceScreenAspect = surfaceAspect/ mImageAspectRatio;
 
-        if (mImageAspectRatio == mSurfaceAspectRatio) {
-            mImageAspectRatio = 1.f;
-        } else if (mImageAspectRatio > mSurfaceAspectRatio) {
-            float nw = ((float) mSurfaceHeight / imgHeight) * imgWidth;
-            mImageAspectRatio = mSurfaceWidth / nw;
-        } else {
-            float nh = ((float) mSurfaceWidth / imgWidth) * imgHeight;
-            mImageAspectRatio = mSurfaceHeight / nh;
-        }
     }
 
 }

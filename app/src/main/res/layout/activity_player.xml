@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="66dp"
         android:orientation="horizontal"
-        android:weightSum="4"
+        android:weightSum="5"
         android:background="#aa000000">
 
         <ImageButton
@@ -43,6 +43,7 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/player_menu_back"/>
 
+
         <ImageButton
             android:id="@+id/menu_grid"
             android:layout_width="0dp"
@@ -51,6 +52,11 @@
             android:src="@drawable/menu_ic_grid"
             android:background="@android:color/transparent"
             android:contentDescription="@string/player_menu_grid"/>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="66dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"/>
 
         <ImageButton
             android:id="@+id/menu_delete"
