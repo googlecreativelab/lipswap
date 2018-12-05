@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.androidexperiments.lipflip"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 28
         versionCode 25
         versionName '2.0.0'
