@@ -113,7 +113,7 @@ public class AndroidUtils {
             share.putExtra(Intent.EXTRA_TEXT, caption);
         }
 
-        return share;
+        return Intent.createChooser(share, caption);
     }
 
     /**
